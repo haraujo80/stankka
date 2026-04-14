@@ -1,0 +1,194 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { mockDebts, mockOnboarding } from "@/data/mockDebts";
+import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS } from "@/types/debt";
+import { AlertTriangle, CreditCard, DollarSign, Users, ShieldAlert } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+
+const COLORS = [
+  "hsl(252, 96%, 67%)",
+  "hsl(263, 91%, 75%)",
+  "hsl(199, 89%, 48%)",
+  "hsl(142, 71%, 45%)",
+  "hsl(38, 92%, 50%)",
+  "hsl(0, 84%, 60%)",
+];
+
+export default function Dashboard() {
+  const totalDebt = mockDebts.reduce((s, d) => s + d.balance, 0);
+  const totalInstallments = mockDebts.reduce((s, d) => s + d.installment, 0);
+  const creditors = new Set(mockDebts.map((d) => d.creditor)).size;
+  const commitmentPct = Math.round((totalInstallments / mockOnboarding.monthlyIncome) * 100);
+  const minExistencial = 600;
+  const remaining = mockOnboarding.monthlyIncome - totalInstallments;
+
+  const byType = Object.entries(
+    mockDebts.reduce<Record<string, number>>((acc, d) => {
+      acc[DEBT_TYPE_LABELS[d.type]] = (acc[DEBT_TYPE_LABELS[d.type]] || 0) + d.balance;
+      return acc;
+    }, {})
+  ).map(([name, value]) => ({ name, value }));
+
+  const byCreditor = Object.entries(
+    mockDebts.reduce<Record<string, number>>((acc, d) => {
+      acc[d.creditor] = (acc[d.creditor] || 0) + d.balance;
+      return acc;
+    }, {})
+  ).map(([name, value]) => ({ name, value }));
+
+  const alerts: string[] = [];
+  const creditorCounts: Record<string, number> = {};
+  mockDebts.forEach((d) => {
+    creditorCounts[d.creditor] = (creditorCounts[d.creditor] || 0) + 1;
+    if (d.interestRate > 8 && d.type === "cartao_credito") {
+      alerts.push(`${d.creditor}: Taxa de ${d.interestRate}% acima da média BACEN`);
+    }
+  });
+  Object.entries(creditorCounts).forEach(([c, n]) => {
+    if (n >= 2) alerts.push(`${n} dívidas com ${c} — possível negociação em lote`);
+  });
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Dívida Total</CardTitle>
+            <DollarSign className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-heading font-bold">
+              {totalDebt.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Credores</CardTitle>
+            <Users className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-heading font-bold">{creditors}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Comprometimento</CardTitle>
+            <CreditCard className="h-4 w-4 text-chart-3" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-heading font-bold ${commitmentPct > 30 ? "text-destructive" : ""}`}>
+              {commitmentPct}%
+            </div>
+            {commitmentPct > 30 && (
+              <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" /> Acima de 30%
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Mínimo Existencial</CardTitle>
+            <ShieldAlert className="h-4 w-4 text-chart-4" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-heading font-bold ${remaining < minExistencial ? "text-destructive" : "text-chart-4"}`}>
+              {remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {remaining < minExistencial ? "Abaixo do mínimo (R$600)" : "Acima do mínimo (R$600)"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {alerts.length > 0 && (
+        <Card className="glass-card border-accent/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-accent" />
+              Observações Automáticas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {alerts.map((a, i) => (
+              <p key={i} className="text-sm text-muted-foreground">• {a}</p>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="glass-card">
+          <CardHeader><CardTitle className="text-base">Por Tipo de Produto</CardTitle></CardHeader>
+          <CardContent className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={byType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name }) => name}>
+                  {byType.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader><CardTitle className="text-base">Por Credor</CardTitle></CardHeader>
+          <CardContent className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={byCreditor} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name }) => name}>
+                  {byCreditor.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="glass-card">
+        <CardHeader><CardTitle className="text-base">Todas as Dívidas</CardTitle></CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left p-2 text-muted-foreground font-medium">Credor</th>
+                  <th className="text-left p-2 text-muted-foreground font-medium">Tipo</th>
+                  <th className="text-right p-2 text-muted-foreground font-medium">Saldo</th>
+                  <th className="text-right p-2 text-muted-foreground font-medium">Parcela</th>
+                  <th className="text-right p-2 text-muted-foreground font-medium">Taxa</th>
+                  <th className="text-left p-2 text-muted-foreground font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mockDebts.map((d) => (
+                  <tr key={d.id} className="border-b border-border/50 hover:bg-muted/20">
+                    <td className="p-2 font-medium">{d.creditor}</td>
+                    <td className="p-2">{DEBT_TYPE_LABELS[d.type]}</td>
+                    <td className="p-2 text-right">{d.balance.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="p-2 text-right">{d.installment.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="p-2 text-right">{d.interestRate}%</td>
+                    <td className="p-2">
+                      <Badge variant={d.status === "em_dia" ? "secondary" : d.status === "negativada" ? "destructive" : "outline"} className="text-xs">
+                        {DEBT_STATUS_LABELS[d.status]}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
