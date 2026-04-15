@@ -2,26 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { WorkType, WORK_TYPE_LABELS } from "@/types/debt";
+import { formatBRL } from "@/lib/format";
 
 const steps = ["Renda", "Dependentes", "Vínculo"];
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
-  const [income, setIncome] = useState("");
-  const [dependents, setDependents] = useState("");
+  const [income, setIncome] = useState(3000);
+  const [dependents, setDependents] = useState(0);
   const [workType, setWorkType] = useState<WorkType | "">("");
   const navigate = useNavigate();
 
   const progress = ((step + 1) / steps.length) * 100;
 
   const canNext =
-    (step === 0 && Number(income) > 0) ||
-    (step === 1 && dependents !== "") ||
+    (step === 0 && income > 0) ||
+    (step === 1) ||
     (step === 2 && workType !== "");
 
   const handleNext = () => {
@@ -43,31 +44,48 @@ export default function Onboarding() {
           <CardTitle className="text-xl">Passo {step + 1} de {steps.length}: {steps[step]}</CardTitle>
           <Progress value={progress} className="mt-2" />
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {step === 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="income">Renda mensal líquida (R$)</Label>
-              <Input
-                id="income"
-                type="number"
-                placeholder="Ex: 4500"
-                value={income}
-                onChange={(e) => setIncome(e.target.value)}
+            <div className="space-y-4">
+              <Label>Renda mensal líquida</Label>
+              <div className="text-center">
+                <span className="text-3xl font-heading font-bold text-primary">
+                  {formatBRL(income)}
+                </span>
+              </div>
+              <Slider
+                value={[income]}
+                onValueChange={(v) => setIncome(v[0])}
+                min={500}
+                max={100000}
+                step={100}
               />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>R$ 500,00</span>
+                <span>R$ 100.000,00+</span>
+              </div>
             </div>
           )}
 
           {step === 1 && (
-            <div className="space-y-2">
-              <Label htmlFor="dependents">Número de dependentes</Label>
-              <Input
-                id="dependents"
-                type="number"
-                min="0"
-                placeholder="Ex: 2"
-                value={dependents}
-                onChange={(e) => setDependents(e.target.value)}
+            <div className="space-y-4">
+              <Label>Número de dependentes</Label>
+              <div className="text-center">
+                <span className="text-3xl font-heading font-bold text-primary">
+                  {dependents}
+                </span>
+              </div>
+              <Slider
+                value={[dependents]}
+                onValueChange={(v) => setDependents(v[0])}
+                min={0}
+                max={10}
+                step={1}
               />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>0</span>
+                <span>10</span>
+              </div>
             </div>
           )}
 
