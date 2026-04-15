@@ -6,47 +6,47 @@
 
 @layer base {
   :root {
-    --background: 232 78% 8%;
-    --foreground: 216 33% 93%;
+    --background: 0 0% 100%;
+    --foreground: 232 40% 15%;
 
-    --card: 235 55% 15%;
-    --card-foreground: 216 33% 93%;
+    --card: 230 25% 97%;
+    --card-foreground: 232 40% 15%;
 
-    --popover: 235 55% 15%;
-    --popover-foreground: 216 33% 93%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 232 40% 15%;
 
-    --primary: 252 96% 67%;
+    --primary: 252 80% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 235 40% 20%;
-    --secondary-foreground: 216 33% 93%;
+    --secondary: 235 25% 93%;
+    --secondary-foreground: 232 40% 25%;
 
-    --muted: 235 30% 18%;
-    --muted-foreground: 230 15% 55%;
+    --muted: 230 20% 94%;
+    --muted-foreground: 230 15% 45%;
 
-    --accent: 263 91% 75%;
+    --accent: 263 70% 58%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 235 30% 22%;
-    --input: 235 30% 22%;
-    --ring: 252 96% 67%;
+    --border: 230 20% 88%;
+    --input: 230 20% 88%;
+    --ring: 252 80% 55%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 232 78% 6%;
-    --sidebar-foreground: 216 33% 93%;
-    --sidebar-primary: 252 96% 67%;
+    --sidebar-background: 230 25% 97%;
+    --sidebar-foreground: 232 40% 15%;
+    --sidebar-primary: 252 80% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 235 40% 16%;
-    --sidebar-accent-foreground: 216 33% 93%;
-    --sidebar-border: 235 30% 18%;
-    --sidebar-ring: 252 96% 67%;
+    --sidebar-accent: 235 25% 93%;
+    --sidebar-accent-foreground: 232 40% 25%;
+    --sidebar-border: 230 20% 88%;
+    --sidebar-ring: 252 80% 55%;
 
-    --chart-1: 252 96% 67%;
-    --chart-2: 263 91% 75%;
+    --chart-1: 252 80% 55%;
+    --chart-2: 263 70% 58%;
     --chart-3: 199 89% 48%;
     --chart-4: 142 71% 45%;
     --chart-5: 38 92% 50%;
@@ -69,10 +69,10 @@
 
 @layer components {
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-border/50 shadow-lg;
+    @apply bg-card border border-border/60 shadow-sm;
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(252, 96%, 67%), hsl(263, 91%, 75%));
+    background: linear-gradient(135deg, hsl(252, 80%, 55%), hsl(263, 70%, 58%));
   }
 }
