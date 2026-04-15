@@ -12,6 +12,7 @@ import AddDebt from "./pages/AddDebt";
 import Projections from "./pages/Projections";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { LGPDConsentModal } from "@/components/LGPDConsentModal";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <LGPDConsentModal />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />

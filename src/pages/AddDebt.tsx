@@ -6,12 +6,57 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, Loader2 } from "lucide-react";
 import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS, DebtType, DebtStatus } from "@/types/debt";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function AddDebt() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"choose" | "upload" | "manual">("choose");
+  const [loading, setLoading] = useState(false);
+
+  // Form states
+  const [creditor, setCreditor] = useState("");
+  const [type, setType] = useState<DebtType | "">("");
+  const [balance, setBalance] = useState("");
+  const [installment, setInstallment] = useState("");
+  const [totalInstallments, setTotalInstallments] = useState("");
+  const [paidInstallments, setPaidInstallments] = useState("");
+  const [interestRate, setInterestRate] = useState("");
+  const [status, setStatus] = useState<DebtStatus | "">("");
+
+  const handleSave = async () => {
+    if (!creditor || !type || !balance || !installment || !status) {
+      toast.error("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      const { error } = await supabase.from("debts").insert({
+        user_id: user.id,
+        creditor,
+        type,
+        balance: Number(balance),
+        installment: Number(installment),
+        total_installments: totalInstallments ? Number(totalInstallments) : null,
+        paid_installments: paidInstallments ? Number(paidInstallments) : 0,
+        interest_rate: interestRate ? Number(interestRate) : null,
+        status,
+      });
+
+      if (error) {
+        toast.error("Erro ao salvar: " + error.message);
+      } else {
+        toast.success("Dívida adicionada!");
+        navigate("/debts");
+      }
+    }
+    setLoading(false);
+  };
 
   if (mode === "choose") {
     return (
@@ -86,11 +131,11 @@ export default function AddDebt() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Credor</Label>
-              <Input placeholder="Ex: Nubank" />
+              <Input placeholder="Ex: Nubank" value={creditor} onChange={(e) => setCreditor(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Tipo</Label>
-              <Select>
+              <Select value={type} onValueChange={(v) => setType(v as DebtType)}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(DEBT_TYPE_LABELS).map(([k, v]) => (
@@ -101,27 +146,27 @@ export default function AddDebt() {
             </div>
             <div className="space-y-2">
               <Label>Saldo devedor (R$)</Label>
-              <Input type="number" placeholder="Ex: 12500" />
+              <Input type="number" placeholder="Ex: 12500" value={balance} onChange={(e) => setBalance(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Parcela (R$)</Label>
-              <Input type="number" placeholder="Ex: 625" />
+              <Input type="number" placeholder="Ex: 625" value={installment} onChange={(e) => setInstallment(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Total de parcelas</Label>
-              <Input type="number" placeholder="Ex: 24" />
+              <Input type="number" placeholder="Ex: 24" value={totalInstallments} onChange={(e) => setTotalInstallments(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Parcelas pagas</Label>
-              <Input type="number" placeholder="Ex: 4" />
+              <Input type="number" placeholder="Ex: 4" value={paidInstallments} onChange={(e) => setPaidInstallments(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Taxa de juros (% a.m.)</Label>
-              <Input type="number" step="0.1" placeholder="Ex: 14.5" />
+              <Input type="number" step="0.1" placeholder="Ex: 14.5" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select>
+              <Select value={status} onValueChange={(v) => setStatus(v as DebtStatus)}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(DEBT_STATUS_LABELS).map(([k, v]) => (
@@ -132,8 +177,11 @@ export default function AddDebt() {
             </div>
           </div>
           <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={() => setMode("choose")}>Cancelar</Button>
-            <Button onClick={() => navigate("/debts")}>Salvar Dívida</Button>
+            <Button variant="outline" onClick={() => setMode("choose")} disabled={loading}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar Dívida
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { mockDebts, getProjection } from "@/data/mockDebts";
-import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS } from "@/types/debt";
-import { AlertTriangle, ShieldCheck, TrendingDown } from "lucide-react";
+import { getProjection } from "@/data/mockDebts";
+import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS, Debt } from "@/types/debt";
+import { AlertTriangle, ShieldCheck, TrendingDown, Loader2 } from "lucide-react";
 import { formatBRL } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
 
 const CONFIDENCE_COLORS: Record<string, string> = {
   baixo: "text-chart-5",
@@ -16,6 +17,41 @@ const CONFIDENCE_COLORS: Record<string, string> = {
 
 export default function Projections() {
   const [accepted, setAccepted] = useState(false);
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("debts")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (data) {
+        setDebts(data.map(d => ({
+          ...d,
+          interestRate: d.interest_rate,
+          totalInstallments: d.total_installments,
+          paidInstallments: d.paid_installments,
+          createdAt: d.created_at
+        })) as unknown as Debt[]);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading && accepted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!accepted) {
     return (
@@ -62,7 +98,7 @@ export default function Projections() {
       </p>
 
       <div className="grid gap-4">
-        {mockDebts.map((d) => {
+        {debts.map((d) => {
           const proj = getProjection(d);
           return (
             <Card key={d.id} className="glass-card">

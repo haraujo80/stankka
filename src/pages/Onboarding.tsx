@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { WorkType, WORK_TYPE_LABELS } from "@/types/debt";
 import { formatBRL } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const steps = ["Renda", "Dependentes", "Vínculo"];
 
@@ -16,6 +18,7 @@ export default function Onboarding() {
   const [income, setIncome] = useState(3000);
   const [dependents, setDependents] = useState(0);
   const [workType, setWorkType] = useState<WorkType | "">("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const progress = ((step + 1) / steps.length) * 100;
@@ -25,11 +28,33 @@ export default function Onboarding() {
     (step === 1) ||
     (step === 2 && workType !== "");
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
-      navigate("/dashboard");
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            monthly_income: income,
+            dependents: dependents,
+            work_type: workType,
+          })
+          .eq("id", user.id);
+
+        if (error) {
+          toast.error("Erro ao salvar dados: " + error.message);
+        } else {
+          toast.success("Perfil atualizado!");
+          navigate("/dashboard");
+        }
+      } else {
+        navigate("/login");
+      }
+      setLoading(false);
     }
   };
 
@@ -111,8 +136,8 @@ export default function Onboarding() {
                 Voltar
               </Button>
             )}
-            <Button onClick={handleNext} disabled={!canNext} className="flex-1">
-              {step === steps.length - 1 ? "Concluir" : "Próximo"}
+            <Button onClick={handleNext} disabled={!canNext || loading} className="flex-1">
+              {loading ? "Salvando..." : step === steps.length - 1 ? "Concluir" : "Próximo"}
             </Button>
           </div>
         </CardContent>
