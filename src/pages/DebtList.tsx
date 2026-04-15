@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatBRL } from "@/lib/format";
 
 export default function DebtList() {
   return (
@@ -32,7 +33,7 @@ export default function DebtList() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="font-heading font-bold">{d.balance.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                    <p className="font-heading font-bold">{formatBRL(d.balance)}</p>
                     <p className="text-xs text-muted-foreground">{d.paidInstallments}/{d.totalInstallments} parcelas</p>
                   </div>
                   <div className="flex gap-1">

@@ -4,6 +4,7 @@ import { mockDebts, mockOnboarding } from "@/data/mockDebts";
 import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS } from "@/types/debt";
 import { AlertTriangle, CreditCard, DollarSign, Users, ShieldAlert } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { formatBRL } from "@/lib/format";
 
 const COLORS = [
   "hsl(252, 96%, 67%)",
@@ -59,9 +60,7 @@ export default function Dashboard() {
             <DollarSign className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-heading font-bold">
-              {totalDebt.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-            </div>
+            <div className="text-2xl font-heading font-bold">{formatBRL(totalDebt)}</div>
           </CardContent>
         </Card>
 
@@ -99,7 +98,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-heading font-bold ${remaining < minExistencial ? "text-destructive" : "text-chart-4"}`}>
-              {remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              {formatBRL(remaining)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {remaining < minExistencial ? "Abaixo do mínimo (R$600)" : "Acima do mínimo (R$600)"}
@@ -133,7 +132,7 @@ export default function Dashboard() {
                 <Pie data={byType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name }) => name}>
                   {byType.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+                <Tooltip formatter={(v: number) => formatBRL(v)} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -147,7 +146,7 @@ export default function Dashboard() {
                 <Pie data={byCreditor} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name }) => name}>
                   {byCreditor.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+                <Tooltip formatter={(v: number) => formatBRL(v)} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -174,8 +173,8 @@ export default function Dashboard() {
                   <tr key={d.id} className="border-b border-border/50 hover:bg-muted/20">
                     <td className="p-2 font-medium">{d.creditor}</td>
                     <td className="p-2">{DEBT_TYPE_LABELS[d.type]}</td>
-                    <td className="p-2 text-right">{d.balance.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
-                    <td className="p-2 text-right">{d.installment.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="p-2 text-right">{formatBRL(d.balance)}</td>
+                    <td className="p-2 text-right">{formatBRL(d.installment)}</td>
                     <td className="p-2 text-right">{d.interestRate}%</td>
                     <td className="p-2">
                       <Badge variant={d.status === "em_dia" ? "secondary" : d.status === "negativada" ? "destructive" : "outline"} className="text-xs">

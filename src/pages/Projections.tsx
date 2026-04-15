@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { mockDebts, getProjection } from "@/data/mockDebts";
 import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS } from "@/types/debt";
 import { AlertTriangle, ShieldCheck, TrendingDown } from "lucide-react";
+import { formatBRL } from "@/lib/format";
 
 const CONFIDENCE_COLORS: Record<string, string> = {
   baixo: "text-chart-5",
@@ -76,8 +77,8 @@ export default function Projections() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Saldo: {d.balance.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} • 
-                      Parcela: {d.installment.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                      Saldo: {formatBRL(d.balance)} • 
+                      Parcela: {formatBRL(d.installment)}
                     </p>
                   </div>
                   <Badge className="gradient-primary text-primary-foreground border-0 text-sm px-3 py-1">
@@ -89,7 +90,7 @@ export default function Projections() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                   <div>
                     <p className="text-muted-foreground">Nova parcela estimada</p>
-                    <p className="font-heading font-semibold">{proj.newInstallment.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                    <p className="font-heading font-semibold">{formatBRL(proj.newInstallment)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Canal recomendado</p>
