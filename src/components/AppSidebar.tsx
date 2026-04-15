@@ -1,6 +1,6 @@
-import { LayoutDashboard, List, PlusCircle, TrendingDown, User } from "lucide-react";
+import { LayoutDashboard, List, PlusCircle, TrendingDown, User, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +10,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -25,6 +27,12 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -61,6 +69,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+              <LogOut className="mr-2 h-4 w-4 shrink-0" />
+              {!collapsed && <span>Sair</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
