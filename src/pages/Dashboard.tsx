@@ -1,10 +1,12 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockDebts, mockOnboarding } from "@/data/mockDebts";
-import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS } from "@/types/debt";
-import { AlertTriangle, CreditCard, DollarSign, Users, ShieldAlert } from "lucide-react";
+import { DEBT_TYPE_LABELS, DEBT_STATUS_LABELS, Debt } from "@/types/debt";
+import { AlertTriangle, CreditCard, DollarSign, Users, ShieldAlert, Loader2 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { formatBRL } from "@/lib/format";
+import { OpenFinanceConnect } from "@/components/OpenFinanceConnect";
+import { supabase } from "@/integrations/supabase/client";
 
 const COLORS = [
   "hsl(252, 96%, 67%)",
@@ -16,32 +18,75 @@ const COLORS = [
 ];
 
 export default function Dashboard() {
-  const totalDebt = mockDebts.reduce((s, d) => s + d.balance, 0);
-  const totalInstallments = mockDebts.reduce((s, d) => s + d.installment, 0);
-  const creditors = new Set(mockDebts.map((d) => d.creditor)).size;
-  const commitmentPct = Math.round((totalInstallments / mockOnboarding.monthlyIncome) * 100);
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [income, setIncome] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const [debtsRes, profileRes] = await Promise.all([
+        supabase.from("debts").select("*").eq("user_id", user.id),
+        supabase.from("profiles").select("monthly_income").eq("id", user.id).single()
+      ]);
+
+      if (debtsRes.data) {
+        setDebts(debtsRes.data.map(d => ({
+          ...d,
+          interestRate: d.interest_rate,
+          totalInstallments: d.total_installments,
+          paidInstallments: d.paid_installments,
+          createdAt: d.created_at
+        })) as unknown as Debt[]);
+      }
+
+      if (profileRes.data) {
+        setIncome(Number(profileRes.data.monthly_income));
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, fetchData)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const totalDebt = debts.reduce((s, d) => s + Number(d.balance), 0);
+  const totalInstallments = debts.reduce((s, d) => s + Number(d.installment), 0);
+  const creditors = new Set(debts.map((d) => d.creditor)).size;
+  const commitmentPct = income > 0 ? Math.round((totalInstallments / income) * 100) : 0;
   const minExistencial = 600;
-  const remaining = mockOnboarding.monthlyIncome - totalInstallments;
+  const remaining = income - totalInstallments;
 
   const byType = Object.entries(
-    mockDebts.reduce<Record<string, number>>((acc, d) => {
-      acc[DEBT_TYPE_LABELS[d.type]] = (acc[DEBT_TYPE_LABELS[d.type]] || 0) + d.balance;
+    debts.reduce<Record<string, number>>((acc, d) => {
+      acc[DEBT_TYPE_LABELS[d.type]] = (acc[DEBT_TYPE_LABELS[d.type]] || 0) + Number(d.balance);
       return acc;
     }, {})
   ).map(([name, value]) => ({ name, value }));
 
   const byCreditor = Object.entries(
-    mockDebts.reduce<Record<string, number>>((acc, d) => {
-      acc[d.creditor] = (acc[d.creditor] || 0) + d.balance;
+    debts.reduce<Record<string, number>>((acc, d) => {
+      acc[d.creditor] = (acc[d.creditor] || 0) + Number(d.balance);
       return acc;
     }, {})
   ).map(([name, value]) => ({ name, value }));
 
   const alerts: string[] = [];
   const creditorCounts: Record<string, number> = {};
-  mockDebts.forEach((d) => {
+  debts.forEach((d) => {
     creditorCounts[d.creditor] = (creditorCounts[d.creditor] || 0) + 1;
-    if (d.interestRate > 8 && d.type === "cartao_credito") {
+    if (d.interestRate && d.interestRate > 8 && d.type === "cartao_credito") {
       alerts.push(`${d.creditor}: Taxa de ${d.interestRate}% acima da média BACEN`);
     }
   });
@@ -49,9 +94,22 @@ export default function Dashboard() {
     if (n >= 2) alerts.push(`${n} dívidas com ${c} — possível negociação em lote`);
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
+        <div className="w-full md:w-auto">
+          <OpenFinanceConnect />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="glass-card">
@@ -169,7 +227,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {mockDebts.map((d) => (
+                {debts.map((d) => (
                   <tr key={d.id} className="border-b border-border/50 hover:bg-muted/20">
                     <td className="p-2 font-medium">{d.creditor}</td>
                     <td className="p-2">{DEBT_TYPE_LABELS[d.type]}</td>
