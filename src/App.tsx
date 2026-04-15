@@ -13,11 +13,13 @@ import Projections from "./pages/Projections";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { LGPDConsentModal } from "@/components/LGPDConsentModal";
+import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider defaultTheme="light" attribute="class">
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -38,6 +40,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
