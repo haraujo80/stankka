@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import { mockDebts, mockOnboarding } from "@/data/mockDebts";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,12 +23,71 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      navigate("/onboarding");
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      if (!data.user) return;
+
+      if (data.user.email === "stankka.brasil@gmail.com") {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("id", data.user.id)
+          .single();
+
+        if (!profile?.onboarding_completed) {
+          const { error: upsertError } = await supabase.from("profiles").upsert({
+            id: data.user.id,
+            full_name: "Demo User",
+            monthly_income: mockOnboarding.monthlyIncome,
+            dependents: mockOnboarding.dependents,
+            work_type: mockOnboarding.workType,
+            onboarding_completed: true,
+          });
+
+          if (upsertError) {
+            toast.error("Erro ao preparar conta demo: " + upsertError.message);
+            return;
+          }
+
+          const debtsToInsert = mockDebts.map(d => ({
+            user_id: data.user.id,
+            creditor: d.creditor,
+            type: d.type,
+            balance: d.balance,
+            installment: d.installment,
+            total_installments: d.totalInstallments,
+            paid_installments: d.paidInstallments,
+            interest_rate: d.interestRate,
+            status: d.status,
+          }));
+
+          const { error: debtsError } = await supabase.from("debts").insert(debtsToInsert);
+          if (debtsError) {
+            toast.error("Erro ao inserir dívidas demo: " + debtsError.message);
+            return;
+          }
+        }
+        navigate("/dashboard");
+      } else {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("id", data.user.id)
+          .single();
+
+        navigate(profile?.onboarding_completed ? "/dashboard" : "/onboarding");
+      }
+    } catch (err) {
+      toast.error("Erro inesperado ao entrar. Tente novamente.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -5,6 +5,7 @@ CREATE TABLE public.profiles (
   monthly_income NUMERIC DEFAULT 0,
   dependents INTEGER DEFAULT 0,
   work_type TEXT,
+  onboarding_completed BOOLEAN DEFAULT FALSE,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
