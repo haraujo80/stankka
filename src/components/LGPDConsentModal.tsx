@@ -12,24 +12,33 @@ export function LGPDConsentModal() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkConsent = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
+    const checkConsent = async (userId: string) => {
       const { data, error } = await supabase
         .from("user_consents")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("consent_type", "lgpd_general")
         .eq("agreed", true)
         .single();
 
       if (!data || error) {
         setOpen(true);
+      } else {
+        setOpen(false);
       }
     };
 
-    checkConsent();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        checkConsent(session.user.id);
+      } else {
+        setOpen(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleAgree = async () => {
@@ -40,7 +49,7 @@ export function LGPDConsentModal() {
 
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-
+    
     if (user) {
       const { error } = await supabase.from("user_consents").insert({
         user_id: user.id,
@@ -69,13 +78,13 @@ export function LGPDConsentModal() {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="flex items-start space-x-3">
-            <Checkbox
-              id="consent"
-              checked={agreed}
+            <Checkbox 
+              id="consent" 
+              checked={agreed} 
               onCheckedChange={(checked) => setAgreed(checked === true)}
             />
             <div className="grid gap-1.5 leading-none">
-              <Label
+              <Label 
                 htmlFor="consent"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >

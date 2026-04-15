@@ -69,7 +69,7 @@ export default function Profile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { error } = await supabase.from('profiles').delete().eq('id', user.id);
-
+        
         if (error) {
           toast.error("Erro ao excluir dados: " + error.message);
         } else {
