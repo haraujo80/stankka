@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import { mockDebts, mockOnboarding } from "@/data/mockDebts";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,13 +23,61 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
     if (error) {
       toast.error(error.message);
-    } else {
-      navigate("/onboarding");
+      setLoading(false);
+      return;
     }
+
+    if (data.user && data.user.email === "demo@stankka.com.br") {
+      // Check if demo data exists
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!profile?.onboarding_completed) {
+        // Seed demo data
+        await supabase.from("profiles").update({
+          full_name: "Demo User",
+          monthly_income: mockOnboarding.monthlyIncome,
+          dependents: mockOnboarding.dependents,
+          work_type: mockOnboarding.workType,
+          onboarding_completed: true
+        }).eq("id", data.user.id);
+
+        const debtsToInsert = mockDebts.map(d => ({
+          user_id: data.user.id,
+          creditor: d.creditor,
+          type: d.type,
+          balance: d.balance,
+          installment: d.installment,
+          total_installments: d.totalInstallments,
+          paid_installments: d.paidInstallments,
+          interest_rate: d.interestRate,
+          status: d.status,
+        }));
+
+        await supabase.from("debts").insert(debtsToInsert);
+      }
+      navigate("/dashboard");
+    } else if (data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profile?.onboarding_completed) {
+        navigate("/dashboard");
+      } else {
+        navigate("/onboarding");
+      }
+    }
+    setLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {

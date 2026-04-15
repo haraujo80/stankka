@@ -42,6 +42,7 @@ export default function Onboarding() {
             monthly_income: income,
             dependents: dependents,
             work_type: workType,
+            onboarding_completed: true,
           })
           .eq("id", user.id);
 

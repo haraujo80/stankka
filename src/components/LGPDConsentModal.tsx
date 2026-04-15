@@ -12,24 +12,33 @@ export function LGPDConsentModal() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkConsent = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
+    const checkConsent = async (userId: string) => {
       const { data, error } = await supabase
         .from("user_consents")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("consent_type", "lgpd_general")
         .eq("agreed", true)
         .single();
 
       if (!data || error) {
         setOpen(true);
+      } else {
+        setOpen(false);
       }
     };
 
-    checkConsent();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        checkConsent(session.user.id);
+      } else {
+        setOpen(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleAgree = async () => {
