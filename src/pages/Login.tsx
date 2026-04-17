@@ -130,7 +130,7 @@ export default function Login() {
             S
           </div>
           <h1 className="text-3xl font-heading font-bold">Stankka</h1>
-          <p className="text-muted-foreground">Consolide suas dívidas. Retome o controle.</p>
+          <p className="text-muted-foreground">Negocie suas dívidas. Retome o controle.</p>
         </div>
 
         <Card className="glass-card">
