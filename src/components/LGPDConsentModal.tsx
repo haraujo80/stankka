@@ -58,7 +58,8 @@ export function LGPDConsentModal() {
       });
 
       if (error) {
-        toast.error("Erro ao salvar consentimento.");
+        console.error("LGPD consent error:", error);
+        toast.error(`Erro ao salvar consentimento: ${error.message}`);
       } else {
         setOpen(false);
         toast.success("Consentimento registrado com sucesso.");
