@@ -14,7 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          monthly_income: number | null
+          dependents: number | null
+          work_type: string | null
+          onboarding_completed: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          monthly_income?: number | null
+          dependents?: number | null
+          work_type?: string | null
+          onboarding_completed?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          monthly_income?: number | null
+          dependents?: number | null
+          work_type?: string | null
+          onboarding_completed?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      debts: {
+        Row: {
+          id: string
+          user_id: string
+          creditor: string
+          type: string
+          balance: number
+          installment: number
+          total_installments: number | null
+          paid_installments: number | null
+          interest_rate: number | null
+          status: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          creditor: string
+          type: string
+          balance?: number
+          installment?: number
+          total_installments?: number | null
+          paid_installments?: number | null
+          interest_rate?: number | null
+          status: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          creditor?: string
+          type?: string
+          balance?: number
+          installment?: number
+          total_installments?: number | null
+          paid_installments?: number | null
+          interest_rate?: number | null
+          status?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      bank_connections: {
+        Row: {
+          id: string
+          user_id: string
+          provider: string
+          external_id: string | null
+          status: string
+          last_sync: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          provider: string
+          external_id?: string | null
+          status: string
+          last_sync?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          provider?: string
+          external_id?: string | null
+          status?: string
+          last_sync?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_consents: {
+        Row: {
+          id: string
+          user_id: string
+          consent_type: string
+          agreed: boolean
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          consent_type: string
+          agreed?: boolean
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          consent_type?: string
+          agreed?: boolean
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
