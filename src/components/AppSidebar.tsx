@@ -1,6 +1,6 @@
-import { LayoutDashboard, List, PlusCircle, TrendingDown, User, LogOut } from "lucide-react";
+import { FileSearch, List, PlusCircle, Briefcase, User, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -16,17 +16,16 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Minhas Dívidas", url: "/debts", icon: List },
-  { title: "Adicionar Dívida", url: "/debts/add", icon: PlusCircle },
-  { title: "Projeções", url: "/projections", icon: TrendingDown },
-  { title: "Perfil", url: "/profile", icon: User },
+  { title: "Diagnóstico", url: "/diagnostico", icon: FileSearch },
+  { title: "Minhas Dívidas", url: "/dividas", icon: List },
+  { title: "Adicionar", url: "/dividas/nova", icon: PlusCircle },
+  { title: "Casos", url: "/casos", icon: Briefcase },
+  { title: "Perfil", url: "/perfil", icon: User },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -38,12 +37,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center text-primary-foreground font-heading font-bold text-sm shrink-0">
-            S
-          </div>
-          {!collapsed && (
-            <span className="font-heading font-bold text-lg text-foreground">Stankka</span>
-          )}
+          <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center text-primary-foreground font-heading font-bold text-sm shrink-0">S</div>
+          {!collapsed && <span className="font-heading font-bold text-lg text-foreground">Stankka</span>}
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -55,7 +50,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end={item.url === "/dashboard"}
+                      end={item.url === "/diagnostico"}
                       className="hover:bg-sidebar-accent/50"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
