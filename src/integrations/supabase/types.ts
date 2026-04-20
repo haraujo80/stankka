@@ -14,7 +14,342 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bacen_rates: {
+        Row: {
+          id: string
+          product_type: Database["public"]["Enums"]["debt_product_type"]
+          rate_monthly: number
+          rate_yearly: number
+          reference_period: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_type: Database["public"]["Enums"]["debt_product_type"]
+          rate_monthly: number
+          rate_yearly: number
+          reference_period: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          product_type?: Database["public"]["Enums"]["debt_product_type"]
+          rate_monthly?: number
+          rate_yearly?: number
+          reference_period?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bank_connections: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          id: string
+          institution_name: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          institution_name: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          institution_name?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      case_documents: {
+        Row: {
+          case_id: string
+          content: string
+          document_type: Database["public"]["Enums"]["kit_document_type"]
+          generated_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          case_id: string
+          content: string
+          document_type: Database["public"]["Enums"]["kit_document_type"]
+          generated_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string
+          content?: string
+          document_type?: Database["public"]["Enums"]["kit_document_type"]
+          generated_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_events: {
+        Row: {
+          case_id: string
+          description: string
+          event_type: string
+          id: string
+          occurred_at: string
+          user_id: string
+        }
+        Insert: {
+          case_id: string
+          description: string
+          event_type: string
+          id?: string
+          occurred_at?: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string
+          description?: string
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          debt_id: string
+          id: string
+          opened_at: string
+          outcome_charges_reversed: number | null
+          outcome_notes: string | null
+          outcome_reduction_pct: number | null
+          paid_at: string | null
+          payment_amount: number
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          recommended_channel: string | null
+          status: Database["public"]["Enums"]["case_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          debt_id: string
+          id?: string
+          opened_at?: string
+          outcome_charges_reversed?: number | null
+          outcome_notes?: string | null
+          outcome_reduction_pct?: number | null
+          paid_at?: string | null
+          payment_amount?: number
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          recommended_channel?: string | null
+          status?: Database["public"]["Enums"]["case_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          debt_id?: string
+          id?: string
+          opened_at?: string
+          outcome_charges_reversed?: number | null
+          outcome_notes?: string | null
+          outcome_reduction_pct?: number | null
+          paid_at?: string | null
+          payment_amount?: number
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          recommended_channel?: string | null
+          status?: Database["public"]["Enums"]["case_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_debt_id_fkey"
+            columns: ["debt_id"]
+            isOneToOne: false
+            referencedRelation: "debts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debts: {
+        Row: {
+          cet_monthly: number | null
+          contract_date: string | null
+          contractual_rate_monthly: number | null
+          created_at: string
+          creditor: string
+          default_since: string | null
+          document_url: string | null
+          flag: Database["public"]["Enums"]["debt_flag"] | null
+          flag_reason: string | null
+          id: string
+          is_negativada: boolean
+          monthly_installment: number | null
+          notes: string | null
+          original_principal: number | null
+          outstanding_balance: number
+          paid_installments: number | null
+          product_type: Database["public"]["Enums"]["debt_product_type"]
+          source: Database["public"]["Enums"]["debt_source"]
+          total_installments: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cet_monthly?: number | null
+          contract_date?: string | null
+          contractual_rate_monthly?: number | null
+          created_at?: string
+          creditor: string
+          default_since?: string | null
+          document_url?: string | null
+          flag?: Database["public"]["Enums"]["debt_flag"] | null
+          flag_reason?: string | null
+          id?: string
+          is_negativada?: boolean
+          monthly_installment?: number | null
+          notes?: string | null
+          original_principal?: number | null
+          outstanding_balance: number
+          paid_installments?: number | null
+          product_type: Database["public"]["Enums"]["debt_product_type"]
+          source?: Database["public"]["Enums"]["debt_source"]
+          total_installments?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cet_monthly?: number | null
+          contract_date?: string | null
+          contractual_rate_monthly?: number | null
+          created_at?: string
+          creditor?: string
+          default_since?: string | null
+          document_url?: string | null
+          flag?: Database["public"]["Enums"]["debt_flag"] | null
+          flag_reason?: string | null
+          id?: string
+          is_negativada?: boolean
+          monthly_installment?: number | null
+          notes?: string | null
+          original_principal?: number | null
+          outstanding_balance?: number
+          paid_installments?: number | null
+          product_type?: Database["public"]["Enums"]["debt_product_type"]
+          source?: Database["public"]["Enums"]["debt_source"]
+          total_installments?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          dependents: number | null
+          full_name: string | null
+          id: string
+          monthly_income: number | null
+          onboarding_complete: boolean
+          phone: string | null
+          uf: string | null
+          updated_at: string
+          work_type: Database["public"]["Enums"]["work_type"] | null
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          dependents?: number | null
+          full_name?: string | null
+          id: string
+          monthly_income?: number | null
+          onboarding_complete?: boolean
+          phone?: string | null
+          uf?: string | null
+          updated_at?: string
+          work_type?: Database["public"]["Enums"]["work_type"] | null
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          dependents?: number | null
+          full_name?: string | null
+          id?: string
+          monthly_income?: number | null
+          onboarding_complete?: boolean
+          phone?: string | null
+          uf?: string | null
+          updated_at?: string
+          work_type?: Database["public"]["Enums"]["work_type"] | null
+        }
+        Relationships: []
+      }
+      user_consents: {
+        Row: {
+          created_at: string
+          granted: boolean
+          granted_at: string | null
+          id: string
+          purpose: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          granted_at?: string | null
+          id?: string
+          purpose: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          purpose?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +358,45 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      case_status:
+        | "aberto"
+        | "em_analise"
+        | "resposta_recebida"
+        | "concluido"
+        | "escalado"
+        | "recusado"
+      debt_flag: "green" | "yellow" | "red"
+      debt_product_type:
+        | "cartao_credito_rotativo"
+        | "cartao_credito_parcelado"
+        | "cheque_especial"
+        | "credito_pessoal"
+        | "consignado_inss"
+        | "consignado_publico"
+        | "consignado_privado"
+        | "financiamento_veiculo"
+        | "financiamento_imobiliario"
+        | "emprestimo_garantia"
+        | "cartao_beneficio"
+        | "bnpl"
+        | "fatura_servico"
+        | "outro"
+      debt_source: "manual" | "upload" | "openfinance"
+      kit_document_type:
+        | "negotiation_letter"
+        | "consumidor_gov"
+        | "bcb_rdr"
+        | "procon"
+        | "contraproposta_14181"
+        | "jec_petition"
+      payment_status: "pendente" | "pago" | "falhou" | "estornado"
+      work_type:
+        | "clt"
+        | "autonomo"
+        | "aposentado"
+        | "servidor"
+        | "desempregado"
+        | "outro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +523,50 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      case_status: [
+        "aberto",
+        "em_analise",
+        "resposta_recebida",
+        "concluido",
+        "escalado",
+        "recusado",
+      ],
+      debt_flag: ["green", "yellow", "red"],
+      debt_product_type: [
+        "cartao_credito_rotativo",
+        "cartao_credito_parcelado",
+        "cheque_especial",
+        "credito_pessoal",
+        "consignado_inss",
+        "consignado_publico",
+        "consignado_privado",
+        "financiamento_veiculo",
+        "financiamento_imobiliario",
+        "emprestimo_garantia",
+        "cartao_beneficio",
+        "bnpl",
+        "fatura_servico",
+        "outro",
+      ],
+      debt_source: ["manual", "upload", "openfinance"],
+      kit_document_type: [
+        "negotiation_letter",
+        "consumidor_gov",
+        "bcb_rdr",
+        "procon",
+        "contraproposta_14181",
+        "jec_petition",
+      ],
+      payment_status: ["pendente", "pago", "falhou", "estornado"],
+      work_type: [
+        "clt",
+        "autonomo",
+        "aposentado",
+        "servidor",
+        "desempregado",
+        "outro",
+      ],
+    },
   },
 } as const
