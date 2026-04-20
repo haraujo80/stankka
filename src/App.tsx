@@ -1,45 +1,47 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { AuthGuard } from "@/components/AuthGuard";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
-import DebtList from "./pages/DebtList";
-import AddDebt from "./pages/AddDebt";
-import Projections from "./pages/Projections";
-import Profile from "./pages/Profile";
+import Diagnostico from "./pages/Diagnostico";
+import Dividas from "./pages/Dividas";
+import NovaDivida from "./pages/NovaDivida";
+import PlanoDeAcao from "./pages/PlanoDeAcao";
+import Casos from "./pages/Casos";
+import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
-import { LGPDConsentModal } from "@/components/LGPDConsentModal";
-import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" attribute="class">
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <LGPDConsentModal />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/debts" element={<DebtList />} />
-            <Route path="/debts/add" element={<AddDebt />} />
-            <Route path="/projections" element={<Projections />} />
-            <Route path="/profile" element={<Profile />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<AuthGuard><Onboarding /></AuthGuard>} />
+            <Route element={<AuthGuard><DashboardLayout /></AuthGuard>}>
+              <Route path="/diagnostico" element={<Diagnostico />} />
+              <Route path="/dividas" element={<Dividas />} />
+              <Route path="/dividas/nova" element={<NovaDivida />} />
+              <Route path="/dividas/:debtId/acao" element={<PlanoDeAcao />} />
+              <Route path="/casos" element={<Casos />} />
+              <Route path="/perfil" element={<Perfil />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

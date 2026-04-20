@@ -1,57 +1,34 @@
+## Stankka — MVP v3 (Diagnóstico + Plano de Ação)
 
+### Posicionamento
+Diagnóstico gratuito + plano de ação a R$ 9,99 por dívida. Não é "limpa-nome", não é banco, não é escritório de advocacia. Infraestrutura de defesa do consumidor.
 
-## Stankka — MVP de Consolidação de Dívidas
+### Páginas
+- `/` Landing pública
+- `/login` Email/senha + Google
+- `/onboarding` 4 passos: renda, dependentes, vínculo, UF
+- `/diagnostico` Dashboard com métricas (dívida total, comprometimento, mínimo existencial), lista com flags green/yellow/red por dívida e citações legais
+- `/dividas` Listagem com flags
+- `/dividas/nova` 3 abas: Manual (funcional), Upload (storage), Open Finance ("Em breve")
+- `/dividas/:id/acao` Plano de ação: canais recomendados em ordem, paywall mock R$ 9,99 (Pix simulado), kit de 5–6 documentos gerados (carta, consumidor.gov, BCB RDR, Procon, contraproposta 14.181, JEC), tracking de status
+- `/casos` Lista de casos pagos com status
+- `/perfil` Edição de dados + sliders renda/dependentes
 
-### Design System
-- **Paleta:** Azul-roxo sofisticado — fundo `#0a0b1e`, surfaces `#12143a`/`#1a1d4e`, accent `#7c5cfc`/`#a78bfa`, texto `#e8edf3`
-- **Tipografia:** Sora (títulos), Manrope (corpo)
-- **Layout:** Dashboard com sidebar colapsável, mobile-first
-- **Bordas:** 12px cards, 8px botões. Glassmorphism sutil nos cards
+### Action Engine
+Determinístico, regras-primeiro. Por dívida: SAC → Ouvidoria → BCB RDR (se inst. financeira) ou Procon (se não) → JEC (≤40 SM) → CEJUSC/Lei 14.181 (se red flag).
 
-### Páginas e Fluxo
+### Diagnóstico
+- Compara taxa contratual vs média BACEN (seed 2026-03)
+- Tetos especiais: consignado INSS 1,85%, rotativo cap 100% principal (Lei 14.690)
+- Cita CDC, Súmula 530/STJ, regulação BACEN
 
-**1. Landing / Login**
-- Tela simples com branding Stankka, login por e-mail + senha
-- Registro com campos básicos
+### Banco
+- profiles, debts, cases, case_documents, case_events, user_consents, bank_connections, bacen_rates
+- Storage bucket privado debt-documents
+- RLS por user_id em tudo
+- Trigger auto-cria profile ao signup
 
-**2. Onboarding (3 passos)**
-- Renda mensal líquida
-- Número de dependentes
-- Tipo de vínculo (CLT, autônomo, aposentado, servidor)
-- Progress bar visual
-
-**3. Ingestão de Dívidas**
-- Botão "Conectar via Open Finance" — desabilitado com badge "Em breve"
-- Botão "Enviar faturas e extratos" — upload de PDF/JPG/PNG (até 20MB, 20 arquivos)
-- Formulário de entrada manual como fallback (credor, tipo, saldo, parcelas, taxa, status)
-- Lista de dívidas já adicionadas com opção de editar/excluir
-
-**4. Dashboard de Consolidação (tela principal)**
-- **Resumo no topo:** 4 cards — Dívida Total, Nº de Credores, Comprometimento da Renda (% com alerta >30%), Indicador de Mínimo Existencial (R$600)
-- **Lista de dívidas:** tabela/cards com credor, tipo, saldo, parcela, taxa, status e badge de redução potencial (ex: "15–35%")
-- **Gráficos:** distribuição por tipo de produto, por credor, por status (pie/donut charts)
-- **Observações automáticas:** alertas tipo "Taxa acima da média BACEN", "3 dívidas com mesmo credor"
-
-**5. Projeção de Redução**
-- Disclaimer obrigatório com checkbox "Li e entendi" antes de ver valores
-- Por dívida: faixa de redução do saldo (X%–Y%), redução da parcela, canal recomendado, tese jurídica resumida
-- Nível de confiança (baixo/médio/alto) por projeção
-- Regras heurísticas: taxa vs média BACEN, Lei 14.690 (rotativo), teto consignado INSS, desconto por negativação
-
-**6. CTA Final**
-- Botão "Quero tentar reduzir essa dívida" — leva a tela informativa da Camada 2 (em breve)
-
-### Sidebar
-- Navegação: Dashboard, Minhas Dívidas, Adicionar Dívida, Projeções, Perfil
-- Colapsável com ícones no modo mini
-- Logo Stankka no topo
-
-### Backend (Supabase)
-- Tabelas: profiles, debts (modelo de dados do spec), onboarding_data
-- RLS por usuário
-- Storage bucket para uploads de faturas
-- Auth por e-mail/senha
-
-### Dados Mock
-- Dívidas de exemplo pré-carregadas para demonstração do dashboard com gráficos e projeções funcionais
-
+### Tema
+- Branco default, dark via next-themes
+- Tokens HSL semânticos (--success, --warning, --destructive)
+- Classes utilitárias: .gradient-primary, .gradient-text, .flag-{green,yellow,red}
