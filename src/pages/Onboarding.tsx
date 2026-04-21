@@ -40,25 +40,31 @@ export default function Onboarding() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      setLoading(false);
       navigate("/login");
       return;
     }
-    if (!workType) return;
-    const { error } = await supabase.from("profiles").update({
+    if (!workType) {
+      setLoading(false);
+      return;
+    }
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
       monthly_income: income,
       dependents,
       work_type: workType as WorkType,
       uf,
       onboarding_complete: true,
-    }).eq("id", user.id);
+    }, { onConflict: "id" });
 
     if (error) {
       toast.error("Erro ao salvar: " + error.message);
-    } else {
-      toast.success("Perfil pronto! Vamos ao diagnóstico.");
-      navigate("/dividas");
+      setLoading(false);
+      return;
     }
+    toast.success("Perfil pronto! Vamos ao diagnóstico.");
     setLoading(false);
+    navigate("/dividas", { replace: true });
   };
 
   return (
