@@ -60,8 +60,12 @@ export default function Login() {
       setLoading(false);
       return;
     }
-    if (data.user && regCpf) {
-      await supabase.from("profiles").update({ cpf: regCpf, full_name: regName }).eq("id", data.user.id);
+    // Ensure CPF/full_name persisted even if trigger raced or user already existed
+    if (data.session && data.user) {
+      await supabase
+        .from("profiles")
+        .update({ cpf: regCpf, full_name: regName })
+        .eq("id", data.user.id);
     }
     setLoading(false);
     toast.success("Conta criada!");
