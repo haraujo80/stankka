@@ -62,9 +62,24 @@ export default function Onboarding() {
       setLoading(false);
       return;
     }
+
+    // Verify persistence before navigating to avoid AuthGuard race
+    const { data: verify } = await supabase
+      .from("profiles")
+      .select("onboarding_complete")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!verify?.onboarding_complete) {
+      toast.error("Não foi possível confirmar o salvamento. Tente novamente.");
+      setLoading(false);
+      return;
+    }
+
     toast.success("Perfil pronto! Vamos ao diagnóstico.");
     setLoading(false);
-    navigate("/dividas", { replace: true });
+    // Hard navigation forces AuthGuard to remount with fresh session/profile state
+    window.location.replace("/dividas");
   };
 
   return (
